@@ -1,0 +1,9 @@
+<RCC>
+    <qresource prefix="/">
+        <file>main.qml</file>
+        <file>BaseButton.qml</file>
+        <file>qmldir</file>
+        <file>translate.qml</file>
+        <file>MainWindow.qml</file>
+    </qresource>
+</RCC>

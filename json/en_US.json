@@ -1,0 +1,20 @@
+{
+	"head": {
+		"i18n": "en_US",
+		"describe": "English(United States)"
+	},
+	"body": {
+		"base_append": "append",  "//base_append": "添加",
+		"base_remove": "remove",  "//base_remove": "移除",
+		"game_play": "play",  "//game_play": "玩",
+		"media_play": "play",  "//media_play": "播放",
+		"main_append": "append",  "//main_append": "添加",
+		"main_remove": "remove",  "//main_remove": "移除",
+		"main_play": "play",  "//main_play": "播放",
+		"test_test": "test",  "//test_test": "测试",
+		"ex_append": "appendex",  "//ex_append": "添加",
+		"ex_remove": "removeex",  "//ex_remove": "移除",
+		"ex_play": "playex",  "//ex_play": "玩",
+		"ex_playex": "playex",  "//ex_playex": "播放"
+	}
+}
