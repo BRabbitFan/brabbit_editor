@@ -5,5 +5,7 @@
         <file>qmldir</file>
         <file>translate.qml</file>
         <file>MainWindow.qml</file>
+        <file>DockItem.qml</file>
+        <file>DockContext.qml</file>
     </qresource>
 </RCC>

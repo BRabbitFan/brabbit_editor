@@ -16,6 +16,7 @@ Window {
   MainWindow {
     id: main_window
     anchors.fill: parent
+    window: _window
   }
 
   Component.onCompleted: {
