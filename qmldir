@@ -1,1 +1,2 @@
 singleton Tr 1.0 translate.qml
+singleton Global 1.0 GlobalContext.qml

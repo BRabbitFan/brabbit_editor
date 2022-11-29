@@ -3,6 +3,8 @@
 #include <QGuiApplication>
 #include <QQmlContext>
 
+#include "DockListModel.hpp"
+
 namespace br {
 
 namespace ui {
@@ -11,6 +13,8 @@ Kernal::Kernal(QPointer<QObject>parent)
     : QObject{parent}
     , language_manager_(std::make_unique<LanguageManager>(this))
     , qml_engine_(std::make_unique<QQmlApplicationEngine>(this)) {
+
+  qmlRegisterType<DockController>("DockController", 1, 0, "DockController");
 
   const QUrl url(QStringLiteral("qrc:/main.qml"));
   QObject::connect(qml_engine_.get(), &QQmlApplicationEngine::objectCreated,

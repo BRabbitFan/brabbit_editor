@@ -1,6 +1,5 @@
 ﻿#include <QGuiApplication>
 
-#include "LanguageManager.hpp"
 #include "UiKernal.hpp"
 
 int main(int argc, char* argv[]) {

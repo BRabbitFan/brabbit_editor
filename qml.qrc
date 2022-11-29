@@ -7,5 +7,6 @@
         <file>MainWindow.qml</file>
         <file>DockItem.qml</file>
         <file>DockContext.qml</file>
+        <file>GlobalContext.qml</file>
     </qresource>
 </RCC>

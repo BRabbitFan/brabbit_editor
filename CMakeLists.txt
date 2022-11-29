@@ -35,6 +35,7 @@ set(PROJECT_SOURCES
   translate.hpp
   LanguageManager.hpp LanguageManager.cpp
   UiKernal.hpp UiKernal.cpp
+  DockListModel.hpp DockListModel.cpp
   qml.qrc
   ${TS_FILES}
 )

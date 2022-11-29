@@ -10,6 +10,7 @@ Rectangle {
   property var window: null
 
   DockContext {
+    id: dock_context
     x: window.mapToGlobal(0,0).x
     y: window.mapToGlobal(0,0).y
     width: main_window.width
@@ -17,9 +18,35 @@ Rectangle {
     visible: true
 
     window : main_window.window
+
+    Component.onCompleted: {
+      Global.dockContext = dock_context
+    }
   }
 
+  DockItem {
+    id: dock_item_1
+    title: "item_1"
+    Component.onCompleted: {
+      dock_context.append(this)
+    }
+  }
 
+  DockItem {
+    id: dock_item_2
+    title: "item_2"
+    Component.onCompleted: {
+      dock_context.append(this)
+    }
+  }
+
+  DockItem {
+    id: dock_item_3
+    title: "item_3"
+    Component.onCompleted: {
+      dock_context.append(this)
+    }
+  }
 
 //  ColumnLayout {
 //    id: main_col
