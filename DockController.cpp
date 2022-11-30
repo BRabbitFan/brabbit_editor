@@ -1,14 +1,25 @@
 #include "DockListModel.hpp"
 
-static constexpr auto KEY_MAXIMUM   { "maximum"   };
-static constexpr auto KEY_VISIBLE   { "visible"   };
-static constexpr auto KEY_WIDTH     { "width"     };
-static constexpr auto KEY_HEIGHT    { "height"    };
-static constexpr auto KEY_MAX_WIDTH { "maxWidth"  };
-static constexpr auto KEY_MAX_HEIGHT{ "maxHeight" };
-static constexpr auto KEY_TITLE     { "title"     };
-static constexpr auto KEY_X         { "x"         };
-static constexpr auto KEY_Y         { "y"         };
+#include <QDebug>
+
+namespace key {
+
+constexpr auto ADSORBED       { "adsorbed"       };
+constexpr auto VISIBLE        { "visible"        };
+
+constexpr auto X              { "x"              };
+constexpr auto Y              { "y"              };
+constexpr auto WIDTH          { "width"          };
+constexpr auto HEIGHT         { "height"         };
+
+constexpr auto ADSORBED_X     { "adsorbedX"      };
+constexpr auto ADSORBED_Y     { "adsorbedY"      };
+constexpr auto ADSORBED_WIDTH { "adsorbedWidth"  };
+constexpr auto ADSORBED_HEIGHT{ "adsorbedHeight" };
+
+constexpr auto TITLE          { "title"          };
+
+}
 
 DockItemData::DockItemData(QPointer<QObject> item) : item_(item) {}
 
@@ -24,75 +35,76 @@ bool DockItemData::isEqual(const DockItemData& that) const { return this->item_ 
 
 bool DockItemData::operator==(const DockItemData& that) const { return isEqual(that); }
 
-bool DockItemData::isMaximum() const {
+bool DockItemData::isAdsorbed() const {
   if (!isVaild()) { return false; }
-  return item_->property(KEY_MAXIMUM).toBool();
+  return item_->property(key::ADSORBED).toBool();
 }
 
-void DockItemData::setMaximum(bool visible) {
+void DockItemData::setAdsorbed(bool adsorbed) {
   if (!isVaild()) { return; }
-  item_->setProperty(KEY_MAXIMUM, visible);
+  item_->setProperty(key::ADSORBED, adsorbed);
 }
 
 bool DockItemData::isVisible() const {
   if (!isVaild()) { return false; }
-  return item_->property(KEY_VISIBLE).toBool();
+  return item_->property(key::VISIBLE).toBool();
 }
 
 void DockItemData::setVisible(bool visible) {
   if (!isVaild()) { return; }
-  item_->setProperty(KEY_VISIBLE, visible);
+  item_->setProperty(key::VISIBLE, visible);
 }
 
 int DockItemData::getX() const {
   if (!isVaild()) { return false; }
-  return item_->property(KEY_X).toInt();
+  return item_->property(key::X).toInt();
 }
 
 void DockItemData::setX(int x) {
   if (!isVaild()) { return; }
-  item_->setProperty(KEY_X, x);
+  item_->setProperty(key::X, x);
 }
 
 int DockItemData::getY() const {
   if (!isVaild()) { return false; }
-  return item_->property(KEY_Y).toInt();
+  return item_->property(key::Y).toInt();
 }
 
 void DockItemData::setY(int y) {
   if (!isVaild()) { return; }
-  item_->setProperty(KEY_Y, y);
+  item_->setProperty(key::Y, y);
 }
 
 int DockItemData::getWidth() const {
   if (!isVaild()) { return false; }
-  return item_->property(KEY_WIDTH).toInt();
+  return item_->property(key::WIDTH).toInt();
 }
 
 void DockItemData::setWidth(int width) {
   if (!isVaild()) { return; }
-  item_->setProperty(KEY_WIDTH, width);
+  item_->setProperty(key::WIDTH, width);
 }
 
 int DockItemData::getHeight() const {
   if (!isVaild()) { return false; }
-  return item_->property(KEY_HEIGHT).toInt();
+  return item_->property(key::HEIGHT).toInt();
 }
 
 void DockItemData::setHeight(int height) {
   if (!isVaild()) { return; }
-  item_->setProperty(KEY_HEIGHT, height);
+  item_->setProperty(key::HEIGHT, height);
 }
 
 QByteArray DockItemData::getTtile() const {
   if (!isVaild()) { return {}; }
-  return item_->property(KEY_TITLE).toByteArray();
+  return item_->property(key::TITLE).toByteArray();
 }
 
 void DockItemData::setTitle(const QByteArray& title) {
   if (!isVaild()) { return; }
-  item_->setProperty(KEY_TITLE, title);
+  item_->setProperty(key::TITLE, title);
 }
+
 
 
 
@@ -107,24 +119,24 @@ bool DockContextData::isVaild() const { return context_ != nullptr; }
 
 DockContextData::operator bool() const { return isVaild(); }
 
-int DockContextData::getX() const {
+int DockContextData::getAdsorbedX() const {
   if (!isVaild()) { return false; }
-  return context_->property(KEY_X).toInt();
+  return context_->property(key::ADSORBED_X).toInt();
 }
 
-int DockContextData::getY() const {
+int DockContextData::getAdsorbedY() const {
   if (!isVaild()) { return false; }
-  return context_->property(KEY_Y).toInt();
+  return context_->property(key::ADSORBED_Y).toInt();
 }
 
-int DockContextData::getMaxWidth() const {
+int DockContextData::getAdsorbedWidth() const {
   if (!isVaild()) { return false; }
-  return context_->property(KEY_MAX_WIDTH).toInt();
+  return context_->property(key::ADSORBED_WIDTH).toInt();
 }
 
-int DockContextData::getMaxHeight() const {
+int DockContextData::getAdsorbedHeight() const {
   if (!isVaild()) { return false; }
-  return context_->property(KEY_MAX_HEIGHT).toInt();
+  return context_->property(key::ADSORBED_HEIGHT).toInt();
 }
 
 
@@ -142,6 +154,13 @@ void DockController::setContext(QObject* context) {
   if (context_.getContext() == context_ptr) {
     return;
   }
+
+  if (context_) {
+    context_.getContext()->disconnect(this);
+    this->disconnect(context_.getContext());
+  }
+
+  connect(context, &QObject::destroyed, this, &DockController::onItemDestroyed);
 
   context_.setContext(context_ptr);
   item_list_.clear();
@@ -175,25 +194,26 @@ void DockController::appendItem(QObject* item) {
 
   item_list_.emplace_back(DockItemData{ item });
 
-  connect(item, &QObject::destroyed, this, [this, item](){
-    removeItem(item);
-  });
+  connect(item, &QObject::destroyed, this, &DockController::onItemDestroyed);
 
-  connect(item, SIGNAL(sigMaximumChanged(bool)), this, SLOT(onItemMaximumChanged(bool)));
-
-  Q_EMIT sigTitleListChanged(getTitleList());
+  Q_EMIT sigContextTitleListChanged(getContextTitleList());
+  Q_EMIT sigContextVisibleChanged(isContextVisible());
 }
 
 void DockController::removeItem(QObject* item) {
   if (!item) { return; }
   if (!isItemExist(item)) { return; }
 
-  item_list_.remove(DockItemData{ item });
+  DockItemData data{ item };
+
+  data.setAdsorbed(false);
+  item_list_.remove(data);
 
   item->disconnect(this);
   this->disconnect(item);
 
-  Q_EMIT sigTitleListChanged(getTitleList());
+  Q_EMIT sigContextTitleListChanged(getContextTitleList());
+  Q_EMIT sigContextVisibleChanged(isContextVisible());
 }
 
 void DockController::focusItem(QObject* item) {
@@ -202,11 +222,21 @@ void DockController::focusItem(QObject* item) {
 
   DockItemData data{ item };
   for (auto& list_data : item_list_) {
-    list_data.setVisible(list_data == data);
+    if (!list_data.isAdsorbed()) { continue; }
+    const bool focused = list_data == data;
+
+    list_data.setVisible(focused);
+
+    if (focused) {
+      data.setX(context_.getAdsorbedX());
+      data.setY(context_.getAdsorbedY());
+      data.setWidth(context_.getAdsorbedWidth());
+      data.setHeight(context_.getAdsorbedHeight());
+    }
   }
 }
 
-int DockController::countItem() const { return item_list_.size(); }
+int DockController::countItem() const { return static_cast<int>(item_list_.size()); }
 
 QObject* DockController::findItemByTitle(const QString& title) {
   for (const auto& data : item_list_) {
@@ -218,53 +248,49 @@ QObject* DockController::findItemByTitle(const QString& title) {
   return nullptr;
 }
 
-QStringList DockController::getTitleList() const {
-  QStringList title_list;
+QStringList DockController::getContextTitleList() const {
+  QStringList result;
 
   for (const auto& data : item_list_) {
-    if (data.isMaximum()) {
-      title_list.emplaceFront(data.getTtile());
+    if (!data.isAdsorbed()) { continue; }
+    result.emplaceFront(data.getTtile());
+  }
+
+  return result;
+}
+
+bool DockController::isContextVisible() const {
+  for (const auto& data : item_list_) {
+    if (data.isAdsorbed()) {
+      return true;
     }
   }
 
-  return title_list;
+  return false;
 }
 
-DockItemData DockController::findDataByItem(QObject* item) {
+std::pair<bool, DockItemData&> DockController::findDataByItem(QObject* item) {
   DockItemData data{ sender() };
-  for (const auto& list_data : item_list_) {
+  for (auto& list_data : item_list_) {
     if (list_data == data) {
-      return list_data;
+      return { true, list_data };
     }
   }
 
-  return DockItemData{};
+  return { false, item_list_.front() };
 }
 
-void DockController::onItemMaximumChanged(bool maximum) {
-  DockItemData data = findDataByItem(sender());
-  if (!data.isVaild()) { return; }
-
-  if (maximum) {
-    data.cache_.x = data.getX();
-    data.cache_.y = data.getY();
-    data.cache_.w = data.getWidth();
-    data.cache_.h = data.getHeight();
-
-    data.setX(context_.getX());
-    data.setY(context_.getY());
-    data.setWidth(context_.getMaxWidth());
-    data.setHeight(context_.getMaxHeight());
-
-    return;
+void DockController::onContextDestroyed() {
+  for (const auto& data : item_list_) {
+    removeItem(data.getItem());
   }
+}
 
-  if (data.cache_) {
-    data.setX(data.cache_.x);
-    data.setY(data.cache_.y);
-    data.setWidth(data.cache_.w);
-    data.setHeight(data.cache_.h);
+void DockController::onItemDestroyed(QObject* item) {
+  removeItem(item);
+}
 
-    data.cache_.clear();
-  }
+void DockController::syncContext() {
+  Q_EMIT sigContextTitleListChanged(getContextTitleList());
+  Q_EMIT sigContextVisibleChanged(isContextVisible());
 }

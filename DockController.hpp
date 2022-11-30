@@ -1,18 +1,15 @@
-#ifndef DOCKLISTMODEL_HPP
-#define DOCKLISTMODEL_HPP
+#ifndef DOCKCONTROLLER_HPP
+#define DOCKCONTROLLER_HPP
 
 #pragma once
 
 #include <list>
 
-#include <QAbstractListModel>
+#include <QObject>
 #include <QPointer>
-
-class DockController;
+#include <QVariant>
 
 class DockItemData {
-  friend class DockController;
-
 public:
   explicit DockItemData(QPointer<QObject> item = nullptr);
 
@@ -27,8 +24,8 @@ public:
   bool operator==(const DockItemData& that) const;
 
 public:
-  bool isMaximum() const;
-  void setMaximum(bool maximum);
+  bool isAdsorbed() const;
+  void setAdsorbed(bool adsorbed);
 
   bool isVisible() const;
   void setVisible(bool visible);
@@ -50,28 +47,6 @@ public:
 
 private:
   QPointer<QObject> item_;
-
-  struct {
-    int x = -1;
-    int y = -1;
-    int w = -1;
-    int h = -1;
-
-    operator bool() const {
-      return x != -1 &&
-             y != -1 &&
-             w != -1 &&
-             h != -1;
-    }
-
-    void clear() {
-      x = -1;
-      y = -1;
-      w = -1;
-      h = -1;
-    }
-
-  } cache_;
 };
 
 
@@ -79,8 +54,6 @@ private:
 
 
 class DockContextData {
-  friend class DockController;
-
 public:
   explicit DockContextData(QPointer<QObject> context = nullptr);
 
@@ -92,10 +65,10 @@ public:
   operator bool() const;
 
 public:
-  int getX() const;
-  int getY() const;
-  int getMaxWidth() const;
-  int getMaxHeight() const;
+  int getAdsorbedX() const;
+  int getAdsorbedY() const;
+  int getAdsorbedWidth() const;
+  int getAdsorbedHeight() const;
 
 private:
   QPointer<QObject> context_;
@@ -118,7 +91,7 @@ public:
   Q_SIGNAL void sigContextChanged(QObject* context);
 
 public:
-  Q_PROPERTY(QObjectList itemList READ getItemList NOTIFY sigItemListChanged CONSTANT);
+  Q_PROPERTY(QObjectList itemList READ getItemList NOTIFY sigItemListChanged);
   Q_INVOKABLE QObjectList getItemList() const;
   Q_SIGNAL void sigItemListChanged(const QObjectList& item_list);
 
@@ -131,17 +104,26 @@ public:
   Q_INVOKABLE QObject* findItemByTitle(const QString& title);
 
 public:
-  Q_PROPERTY(QStringList titleList READ getTitleList NOTIFY sigTitleListChanged CONSTANT);
-  Q_INVOKABLE QStringList getTitleList() const;
-  Q_SIGNAL void sigTitleListChanged(const QStringList& title_list);
+  Q_PROPERTY(QStringList contextTitleList READ getContextTitleList NOTIFY sigContextTitleListChanged);
+  Q_INVOKABLE QStringList getContextTitleList() const;
+  Q_SIGNAL void sigContextTitleListChanged(const QStringList& context_title_list);
+
+public:
+  Q_PROPERTY(bool contextVisible READ isContextVisible NOTIFY sigContextVisibleChanged);
+  Q_INVOKABLE bool isContextVisible() const;
+  Q_SIGNAL void sigContextVisibleChanged(bool visible);
+
+  Q_INVOKABLE void syncContext();
 
 private:
-  DockItemData findDataByItem(QObject* item);
-  Q_SLOT void onItemMaximumChanged(bool maximum);
+  std::pair<bool, DockItemData&> findDataByItem(QObject* item);
+
+  Q_SLOT void onContextDestroyed();
+  Q_SLOT void onItemDestroyed(QObject* item);
 
 private:
   DockContextData context_;
   std::list<DockItemData> item_list_;
 };
 
-#endif // DOCKLISTMODEL_HPP
+#endif // DOCKCONTROLLER_HPP

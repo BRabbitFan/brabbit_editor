@@ -1,5 +1,5 @@
-import QtQuick
-import QtQuick.Controls
+import QtQuick 2.13
+import QtQuick.Controls 2.13
 
 Button {
   width: 80

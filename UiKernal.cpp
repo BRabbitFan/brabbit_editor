@@ -3,7 +3,7 @@
 #include <QGuiApplication>
 #include <QQmlContext>
 
-#include "DockListModel.hpp"
+#include "DockController.hpp"
 
 namespace br {
 
